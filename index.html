@@ -210,46 +210,23 @@
 
     @media (max-width: 380px) {
       .title { font-size:16px; padding:0 55px; }
-      .category-button, .handout-button { font-size:14px; padding:18px 14px; }
-      .category-grid { gap:10px; margin-top:15px; }
-      .nav-button { width:46px; height:46px; }
-      .page-indicator { padding:8px 16px; font-size:13px; }
+      .category-button, .handout-button { font-size:15px; padding:16px 12px; }
+      .page-indicator { font-size:13px; padding:8px 16px; }
+      .image-viewer { max-height: calc(var(--vh,1vh) * 100 - 150px); }
       .impressum-button { font-size: 10px; padding: 5px 10px; }
     }
   </style>
 </head>
-
 <body>
-  <div id="app" class="container"></div>
+  <div class="container" id="app"></div>
 
-  <script crossorigin src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+  <!-- React / App-Skript (unverändert) -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <script type="text/babel">
     const { useState } = React;
-
-    const ArrowLeft = () => (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-        <line x1="19" y1="12" x2="5" y2="12"></line>
-        <polyline points="12 19 5 12 12 5"></polyline>
-      </svg>
-    );
-
-    const ArrowRight = () => (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-        <line x1="5" y1="12" x2="19" y2="12"></line>
-        <polyline points="12 5 19 12 12 19"></polyline>
-      </svg>
-    );
-
-    const DownloadIcon = () => (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-        <polyline points="7 10 12 15 17 10"></polyline>
-        <line x1="12" y1="15" x2="12" y2="3"></line>
-      </svg>
-    );
 
     const categoriesConfig = {
       'unterhaltung': { title: 'UNTERHALTNG', handouts: [{ id: 'ard-audiothek', title:'ARD Audiothek' }, { id: 'spotify', title:'Spotify' }]},
@@ -292,7 +269,13 @@
       ]}
     };
 
-    function App() {
+    const HomeIcon = () => (<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>);
+    const ArrowLeft = () => (<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>);
+    const ArrowRight = () => (<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>);
+    const DownloadIcon = () => (<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>);
+
+
+    function App(){
       const [view, setView] = useState('categories');
       const [selectedCategory, setSelectedCategory] = useState(null);
       const [selectedHandout, setSelectedHandout] = useState(null);
@@ -306,7 +289,6 @@
       const goHome = () => { setView('categories'); setSelectedCategory(null); setSelectedHandout(null); setCurrentPage(0); setIsZoomed(false); setAvailablePages([]); setPdfAvailable(false); };
       const goBackToCategory = () => { setView('handouts'); setSelectedHandout(null); setCurrentPage(0); setIsZoomed(false); setAvailablePages([]); setPdfAvailable(false); };
       const selectCategory = (categoryId) => { setSelectedCategory(categoryId); setView('handouts'); };
-      const openImpressum = () => { window.open('https://ash-sprungbrett.de/kontakt/', '_blank'); };
       const selectHandout = async (handout, categoryId) => {
         setIsLoading(true);
         setSelectedHandout({ ...handout, categoryId });
@@ -387,7 +369,7 @@
                   </button>
                 ))}
               </div>
-              <button className="impressum-button" onClick={openImpressum}>
+              <button className="impressum-button" onClick={() => window.open('https://ash-sprungbrett.de/kontakt/', '_blank')}>
                 Impressum
               </button>
             </>
