@@ -192,42 +192,6 @@
       transform: scale(0.98);
     }
 
-    /* Impressum Content */
-    .impressum-content {
-      padding: 20px;
-      overflow-y: auto;
-      flex: 1;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-    }
-
-    .impressum-content::-webkit-scrollbar {
-      display: none;
-    }
-
-    .impressum-content h2 {
-      font-size: 24px;
-      font-weight: 700;
-      color: #333;
-      margin-bottom: 20px;
-      text-align: center;
-    }
-
-    .impressum-content p {
-      font-size: 15px;
-      line-height: 1.6;
-      color: #555;
-      margin-bottom: 15px;
-    }
-
-    .impressum-content strong {
-      color: #333;
-      display: block;
-      margin-top: 20px;
-      margin-bottom: 5px;
-    }
-
     /* Responsive Anpassungen - nur VH-Referenzen durch var(--vh) ersetzt */
     @media (max-width: 640px) {
       .container { padding:10px; max-width: 100%; }
@@ -242,8 +206,6 @@
       .page-indicator { padding:10px 20px; font-size:14px; border-radius:20px; flex:1; max-width:160px; text-align:center; }
       .download-button { padding: 16px 20px; font-size: 15px; border-radius: 10px; }
       .impressum-button { font-size: 11px; padding: 6px 12px; }
-      .impressum-content h2 { font-size: 20px; }
-      .impressum-content p { font-size: 14px; }
     }
 
     @media (max-width: 380px) {
@@ -343,9 +305,8 @@
 
       const goHome = () => { setView('categories'); setSelectedCategory(null); setSelectedHandout(null); setCurrentPage(0); setIsZoomed(false); setAvailablePages([]); setPdfAvailable(false); };
       const goBackToCategory = () => { setView('handouts'); setSelectedHandout(null); setCurrentPage(0); setIsZoomed(false); setAvailablePages([]); setPdfAvailable(false); };
-      const goBackFromImpressum = () => { setView('categories'); };
       const selectCategory = (categoryId) => { setSelectedCategory(categoryId); setView('handouts'); };
-      const openImpressum = () => { setView('impressum'); };
+      const openImpressum = () => { window.open('https://ash-sprungbrett.de/kontakt/', '_blank'); };
       const selectHandout = async (handout, categoryId) => {
         setIsLoading(true);
         setSelectedHandout({ ...handout, categoryId });
@@ -415,7 +376,6 @@
         <>
           {view === 'handouts' && (<button className="home-button" onClick={goHome}><ArrowLeft /></button>)}
           {view === 'viewer'   && (<button className="home-button" onClick={goBackToCategory}><ArrowLeft /></button>)}
-          {view === 'impressum' && (<button className="home-button" onClick={goBackFromImpressum}><ArrowLeft /></button>)}
 
           {view === 'categories' && (
             <>
@@ -501,33 +461,6 @@
                    </button>
                  </>
                )}
-            </div>
-          )}
-
-          {view === 'impressum' && (
-            <div className="impressum-content">
-              <h2>Impressum</h2>
-              <p>
-                <strong>Angaben gemäß § 5 TMG:</strong>
-                Max Mustermann<br/>
-                Musterstraße 123<br/>
-                12345 Musterstadt
-              </p>
-              <p>
-                <strong>Kontakt:</strong>
-                Telefon: +49 (0) 123 456789<br/>
-                E-Mail: kontakt@beispiel.de
-              </p>
-              <p>
-                <strong>Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV:</strong>
-                Max Mustermann<br/>
-                Musterstraße 123<br/>
-                12345 Musterstadt
-              </p>
-              <p>
-                <strong>Haftungsausschluss:</strong>
-                Die Inhalte unserer Seiten wurden mit größter Sorgfalt erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte können wir jedoch keine Gewähr übernehmen.
-              </p>
             </div>
           )}
         </>
