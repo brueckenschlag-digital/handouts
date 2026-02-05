@@ -70,7 +70,6 @@
       padding: 0 20px;
       position: relative;
       z-index: 5;
-      transition: padding-left 0.2s ease;
     }
 
     .title-container img {
@@ -594,35 +593,73 @@
         threshold: 0.3
       });
 
-      // Kollisionserkennung für Zurück-Button mit Titel/Logo
+      // Kollisionserkennung für Zurück-Button mit Titel/Logo UND rechter Rand
       useEffect(() => {
         const checkCollision = () => {
           const homeButton = document.querySelector('.home-button');
           const titleContainer = document.querySelector('.title-container');
+          const logo = titleContainer?.querySelector('img');
           
-          if (!homeButton || !titleContainer) return;
+          if (!titleContainer) return;
           
-          const buttonRect = homeButton.getBoundingClientRect();
+          const containerRect = document.querySelector('.container').getBoundingClientRect();
           const titleRect = titleContainer.getBoundingClientRect();
+          const logoRect = logo?.getBoundingClientRect();
           
-          // Berechne ob es eine Überlappung gibt (mit 10px Puffer)
-          const buffer = 10;
-          const collision = !(
-            buttonRect.right + buffer < titleRect.left ||
-            buttonRect.left > titleRect.right + buffer ||
-            buttonRect.bottom + buffer < titleRect.top ||
-            buttonRect.top > titleRect.bottom + buffer
-          );
+          // Standard-Werte
+          let newPaddingLeft = 20;
+          let newGap = 12;
+          let newLogoHeight = 35;
           
-          if (collision) {
-            // Berechne wie weit der Titel nach rechts verschoben werden muss
-            const overlap = (buttonRect.right + buffer) - titleRect.left;
-            const currentPadding = 20; // Standard padding
-            const newPadding = currentPadding + overlap + 10; // +10px extra Abstand
-            titleContainer.style.paddingLeft = `${newPadding}px`;
-          } else {
-            // Setze auf Standard-Padding zurück
-            titleContainer.style.paddingLeft = '20px';
+          // 1. Prüfe Kollision mit Zurück-Button (links)
+          if (homeButton) {
+            const buttonRect = homeButton.getBoundingClientRect();
+            const buffer = 10;
+            const collision = !(
+              buttonRect.right + buffer < titleRect.left ||
+              buttonRect.left > titleRect.right + buffer ||
+              buttonRect.bottom + buffer < titleRect.top ||
+              buttonRect.top > titleRect.bottom + buffer
+            );
+            
+            if (collision) {
+              const overlap = (buttonRect.right + buffer) - titleRect.left;
+              newPaddingLeft = 20 + overlap + 10;
+            }
+          }
+          
+          // 2. Prüfe ob Logo am rechten Rand rausgeht (mit großzügigerem Puffer)
+          if (logo && logoRect) {
+            const rightEdge = containerRect.right - 25; // 25px Puffer rechts (mehr als vorher)
+            const logoRight = logoRect.right;
+            
+            if (logoRight > rightEdge) {
+              const overflow = logoRight - rightEdge + 5; // +5px extra Sicherheit
+              
+              // Strategie 1: Gap verringern (von 12px bis minimal 2px)
+              const maxGapReduction = 10; // Mehr Gap-Reduzierung erlauben
+              const gapReduction = Math.min(overflow, maxGapReduction);
+              newGap = Math.max(2, 12 - gapReduction);
+              
+              // Strategie 2: Logo verkleinern
+              const remainingOverflow = overflow - gapReduction;
+              if (remainingOverflow > 0) {
+                // Logo aggressiver verkleinern
+                newLogoHeight = Math.max(16, 35 - remainingOverflow * 1.2);
+                
+                // Für sehr kleine Bildschirme noch kleiner
+                if (window.innerWidth <= 360) {
+                  newLogoHeight = Math.max(14, newLogoHeight);
+                }
+              }
+            }
+          }
+          
+          // Werte anwenden
+          titleContainer.style.paddingLeft = `${newPaddingLeft}px`;
+          titleContainer.style.gap = `${newGap}px`;
+          if (logo) {
+            logo.style.height = `${newLogoHeight}px`;
           }
         };
         
@@ -631,13 +668,17 @@
         window.addEventListener('resize', checkCollision);
         window.addEventListener('orientationchange', checkCollision);
         
-        // Verzögerte Prüfung für Render-Verzögerungen
-        const timeoutId = setTimeout(checkCollision, 100);
+        // Mehrere verzögerte Prüfungen für bessere Zuverlässigkeit
+        const timeoutId1 = setTimeout(checkCollision, 50);
+        const timeoutId2 = setTimeout(checkCollision, 150);
+        const timeoutId3 = setTimeout(checkCollision, 300);
         
         return () => {
           window.removeEventListener('resize', checkCollision);
           window.removeEventListener('orientationchange', checkCollision);
-          clearTimeout(timeoutId);
+          clearTimeout(timeoutId1);
+          clearTimeout(timeoutId2);
+          clearTimeout(timeoutId3);
         };
       }, [view, selectedCategory]); // Prüfe neu wenn sich die Ansicht ändert
 
