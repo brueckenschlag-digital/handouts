@@ -424,7 +424,11 @@
     const { useState, useEffect } = React;
 
     const categoriesConfig = {
-      'unterhaltung': { title: 'UNTERHALTNG', handouts: [{ id: 'ard-audiothek', title:'ARD Audiothek' }, { id: 'spotify', title:'Spotify' }]},
+      'unterhaltung': { title: 'UNTERHALTNG', handouts: [
+        { id: 'ard-audiothek', title:'ARD Audiothek' }, 
+        { id: 'spotify', title:'Spotify' },
+        {id:'whatsapp', title:'WhatsApp'}
+      ]},
       'digitaler-alltag': { title: 'DIGITALER ALLTAG', handouts: [
         {id:'notfallpass-android', title:'Notfallpass Android'},
         {id:'notfallpass-iphone', title:'Notfallpass iPhone'},
