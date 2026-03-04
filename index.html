@@ -757,7 +757,7 @@
       const loadAvailablePages = async (categoryId, handoutId) => {
         const extensions = ['jpg','jpeg','png'];
         const foundPages = [];
-        for (let i=1;i<=20;i++){
+        for (let i=1;i<=50;i++){
           let pageFound = false;
           for (let ext of extensions){
             const filename = `bilder/${categoryId}_${handoutId}_${i}.${ext}`;
