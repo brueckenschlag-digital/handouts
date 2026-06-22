@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <link rel="shortcut icon" href="https://ash-sprungbrett.de/wp-content/uploads/2024/08/Favicon.svg" type="image/x-icon">
+  <title>Handouts-Digital</title>
+
+  <style>
+    /* dynamische vh fallback */
+    :root { --vh: 1vh; }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: rgba(0,0,0,0.1); }
+
+    /* Body: nicht zentrieren — lässt Scrollverhalten normal funktionieren */
+    html, body {
+      height: 100%;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 0;
+      -webkit-text-size-adjust: 100%;
+      touch-action: manipulation;
+      /* kein overflow:hidden mehr! */
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* App-Container verwendet dynamische Höhe */
+    .container {
+      width: 100%;
+      max-width: 600px;
+      height: calc(var(--vh, 1vh) * 100); /* <-- dynamisch */
+      background: #ffffff;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      border: none;
+      overflow: hidden; /* innere Bereiche scrollen, nicht das ganze Dokument */
+      margin: 0 auto;
+    }
+
+    /* Safe-area und Abstand am Ende */
+    .category-grid,
+    .viewer-container {
+      padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+      min-height: 0; /* wichtig für flex children, damit overflow-y funktioniert */
+    }
+
+    .image-viewer,
+    .navigation {
+      padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .home-button { position: absolute; top: 20px; left: 20px; width: 50px; height: 50px; background: #f0f0f0; border: 1px solid #d0d0d0; border-radius: 12px; display:flex; align-items:center; justify-content:center; z-index:10; cursor:pointer; user-select:none; -webkit-user-select:none; touch-action: manipulation; }
+
+    .title-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      margin-top: 15px;
+      margin-bottom: 12px;
+      padding: 0 20px;
+      position: relative;
+      z-index: 5;
+    }
+
+    .title-container img {
+      height: 35px;
+      width: auto;
+      object-fit: contain;
+    }
+
+    @media (max-width: 480px) {
+      .title-container img {
+        height: 28px;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .title-container img {
+        height: 24px;
+      }
+      .title-container {
+        gap: 8px;
+      }
+    }
+
+    .title { text-align:center; color:#333; font-size:28px; font-weight:700; margin:0; text-transform:uppercase; letter-spacing:3px; line-height:1.3; }
+
+    /* LISTEN / SCROLLAREAS - stellen das eigentliche Scrollen sicher */
+    .category-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+      margin-top: 30px;
+      overflow-y: auto;      /* <-- wichtig */
+      flex: 1;               /* füllt verbleibenden Platz */
+      padding-right: 10px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      min-height: 0;
+    }
+
+    .category-button {
+      background:#f0f0f0; border:1px solid #d0d0d0; border-radius:16px; padding:24px 18px; font-size:18px; font-weight:700; color:#333; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.1); text-transform:uppercase; letter-spacing:1.5px; user-select:none; -webkit-user-select:none; touch-action: manipulation; display:flex; align-items:center; justify-content:center; line-height:1.3; width: 100%; height: auto;
+    }
+
+    .handout-button {
+      background:#f0f0f0; border:1px solid #d0d0d0; border-radius:16px; padding:45px 24px; font-size:23px; font-weight:700; color:#333; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.1); text-transform:uppercase; letter-spacing:1.5px; user-select:none; -webkit-user-select:none; touch-action: manipulation; min-height: 100px; display:flex; align-items:center; justify-content:center; line-height:1.3; width: 100%;
+    }
+
+    /* SUCH-BUTTON - optisch wie andere Buttons */
+    .search-button {
+      background: #f0f0f0;
+      border: 1px solid #d0d0d0;
+      border-radius: 16px;
+      padding: 28px 24px;
+      font-size: 18px;
+      font-weight: 700;
+      color: #333;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 30px;
+      flex-shrink: 0;
+    }
+
+    .search-button svg {
+      width: 22px;
+      height: 22px;
+      fill: #333;
+    }
+
+    /* Suchansicht */
+    .search-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      margin-top: 70px;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .search-input-wrapper {
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 18px 50px 18px 20px;
+      font-size: 18px;
+      border: 2px solid #d0d0d0;
+      border-radius: 12px;
+      outline: none;
+      background: #f8f8f8;
+    }
+
+    .search-input:focus {
+      border-color: #000000;
+      background: white;
+    }
+
+    .search-icon-input {
+      position: absolute;
+      right: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #999;
+    }
+
+    .search-icon-input svg {
+      width: 22px;
+      height: 22px;
+      fill: #999;
+    }
+
+    .search-results-container {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .search-results-container::-webkit-scrollbar {
+      display: none;
+    }
+
+    .search-result-item {
+      background: #f8f8f8;
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+
+    .search-result-item:hover {
+      background: white;
+      border-color: #000000;
+    }
+
+    .search-result-item:active {
+      transform: scale(0.98);
+    }
+
+    .search-result-title {
+      font-weight: 700;
+      color: #333;
+      font-size: 16px;
+      margin-bottom: 6px;
+    }
+
+    .search-result-category {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .search-result-match {
+      color: #667eea;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .no-search-results {
+      text-align: center;
+      padding: 60px 20px;
+      color: #999;
+    }
+
+    .no-search-results-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+    }
+
+    .no-search-results-text {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .no-search-results-hint {
+      font-size: 14px;
+      color: #bbb;
+    }
+
+    .viewer-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      margin-top: 70px;
+      flex: 1;
+      overflow-y: auto;       /* <-- vorher hidden, jetzt scrollbar möglich */
+      justify-content: flex-start;
+      min-height: 0;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    /* Scrollbar verstecken – Chrome / Safari / Edge */
+    .category-grid::-webkit-scrollbar,
+    .viewer-container::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* Bild-Viewer begrenzen relativ zur dynamischen VH */
+    .image-viewer {
+      width: 100%;
+      background: #f8f8f8;
+      border-radius: 12px;
+      border: 1px solid #e0e0e0;
+      overflow: hidden;
+      position: relative;
+      max-height: calc(var(--vh, 1vh) * 100 - 200px); /* passt sich an */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 1;
+    }
+
+    .image-viewer img { max-width:100%; max-height:100%; width:auto; height:auto; display:block; object-fit:contain; cursor:zoom-in; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; }
+
+    .image-viewer.zoomed { overflow: auto; }
+    .image-viewer.zoomed img { cursor: zoom-out; transform: scale(2); transform-origin: top left; }
+
+    .navigation { display:flex; gap:15px; align-items:center; margin-top:15px; flex-shrink:0; }
+
+    .nav-button { width:60px; height:60px; background:#f0f0f0; border:1px solid #d0d0d0; border-radius:12px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.1); user-select:none; -webkit-user-select:none; touch-action: manipulation; }
+
+    .page-indicator { background:#f0f0f0; border:1px solid #d0d0d0; padding:12px 24px; border-radius:24px; font-weight:600; color:#333; box-shadow:0 2px 4px rgba(0,0,0,0.1); font-size:16px; }
+
+    .error-message { padding:20px; text-align:center; color:#ff6b6b; font-weight:600; line-height:1.8; }
+
+    .loading { text-align:center; padding:20px; color:#333; font-weight:600; }
+
+    .download-button { 
+      width: 100%; 
+      background: #4a90e2; 
+      color: white; 
+      border: none; 
+      border-radius: 12px; 
+      padding: 18px 24px; 
+      font-size: 16px; 
+      font-weight: 700; 
+      cursor: pointer; 
+      box-shadow: 0 2px 8px rgba(74,144,226,0.3); 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      gap: 10px;
+      margin-top: 15px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+
+    .download-button:hover { background: #3a7bc8; }
+    
+    .download-button:active { transform: scale(0.98); }
+
+    .download-button.disabled { 
+      background: #d0d0d0; 
+      color: #888; 
+      cursor: not-allowed; 
+      box-shadow: none;
+    }
+
+    .download-button svg { width: 24px; height: 24px; fill: currentColor; }
+
+    /* Impressum Button */
+    .impressum-button {
+      background: #f0f0f0;
+      border: 1px solid #d0d0d0;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #666;
+      cursor: pointer;
+      text-align: center;
+      margin-top: 20px;
+      flex-shrink: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+
+    .impressum-button:hover {
+      background: #e8e8e8;
+    }
+
+    .impressum-button:active {
+      transform: scale(0.98);
+    }
+
+    /* Responsive Anpassungen */
+    @media (max-width: 640px) {
+      .container { padding:10px; max-width: 100%; }
+      .title { font-size:18px; padding:0 60px; letter-spacing:1px; margin-bottom:15px; margin-top:15px; }
+      .category-button { font-size:15px; padding:18px 14px; border-radius:12px; }
+      .handout-button { font-size:17px; padding:30px 16px; border-radius:12px; min-height: 80px; }
+      .search-button { font-size:16px; padding:18px 20px; border-radius:12px; }
+      .category-grid { gap:10px; margin-top:20px; padding-right:5px; }
+      .home-button { width:44px; height:44px; top:15px; left:15px; border-radius:10px; }
+      .viewer-container { gap:10px; margin-top:55px; }
+      .search-container { margin-top:55px; }
+      .image-viewer { border-radius:8px; max-height: calc(var(--vh, 1vh) * 100 - 160px); }
+      .navigation { gap:10px; margin-top:10px; width:100%; justify-content:center; }
+      .nav-button { width:50px; height:50px; border-radius:10px; }
+      .page-indicator { padding:10px 20px; font-size:14px; border-radius:20px; flex:1; max-width:160px; text-align:center; }
+      .download-button { padding: 16px 20px; font-size: 15px; border-radius: 10px; }
+      .impressum-button { font-size: 11px; padding: 6px 12px; }
+      .search-input { font-size: 16px; padding: 16px 45px 16px 18px; }
+      .search-result-item { padding: 14px 16px; }
+      .search-result-title { font-size: 15px; }
+    }
+
+    @media (max-width: 380px) {
+      .title { font-size:16px; padding:0 55px; }
+      .category-button { font-size:13px; padding:16px 10px; }
+      .handout-button { font-size:16px; padding:25px 12px; min-height: 70px; }
+      .search-button { font-size:15px; padding:16px 18px; }
+      .page-indicator { font-size:13px; padding:8px 16px; }
+      .image-viewer { max-height: calc(var(--vh,1vh) * 100 - 150px); }
+      .impressum-button { font-size: 10px; padding: 5px 10px; }
+      .search-input { font-size: 15px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="app"></div>
+
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+  <script>
+const _jsxFileName = ""; function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }    const { useState, useEffect } = React;
+
+    const categoriesConfig = {
+      'digitaler-alltag': { title: 'DIGITALER ALLTAG', handouts: [
+        {id:'apotheke-gesundde', title:'Apotheke gesund.de'},
+        {id:'db-app', title:'DB App'},
+        {id:'doctolib', title:'Doctolib'},
+        {id:'flaschenpost', title:'Flaschenpost'},
+        {id:'google-lens', title:'Google Lens'},
+        {id:'google-maps', title:'Google Maps'},
+        {id:'ki', title:'KI'},
+        {id:'mytherapy', title:'MyTherapy'},
+        {id:'notfallpass-android', title:'Notfallpass Android'},
+        {id:'notfallpass-iphone', title:'Notfallpass iPhone'},
+        {id:'online-banking', title:'Online Banking'},
+        {id:'online-shops', title:'Online Shops'},
+        {id:'payback-app', title:'Payback App'}
+      ]},
+       'handy-grundlagen': { title:'HANDY GRUNDLAGEN', handouts: [
+        {id:'app-installieren', title:'App Installieren'},
+        {id:'bilder-bearbeiten', title:'Bilder bearbeiten'},
+        {id:'datenuebertragung-android', title:'Datenübertragung Android'},
+        {id:'datenuebertragung-iphone', title:'Datenübertragung iPhone'},
+        {id:'e-mails', title:'E-Mails lesen und schreiben'},
+        {id:'kalendereintrag', title:'Kalendereintrag'},
+        {id:'loeschungen-android', title:'Löschungen auf dem Android'},
+        {id:'loeschungen-iphone', title:'Löschungen auf einem iPhone durchführen'},
+        {id:'qr-code-android', title:'QR-Code Android'},
+        {id:'qr-code-ios', title:'QR-Code iOS'},
+        {id:'updates-handy', title:'Updates auf dem Handy installieren'}
+      ]},
+      'sicherheit': { title: 'SICHERHEIT', handouts: [
+        {id:'antivirus', title:'Antivirus'},
+        {id:'chrome-werbung-blockieren', title:'Chrome Werbung blockieren'},
+        {id:'datenschutz', title:'Datenschutz'},
+        {id:'nina-warnapp', title:'NINA - Warnapp'},
+        {id:'nora-notrufapp', title:'nora - Notrufapp'},
+        {id:'online-betrug', title:'Online-Betrug'},
+        {id:'passwortmanager', title:'Passwortmanager'},
+        {id:'safari-einstellungen', title:'Safari Einstellungen'},
+        {id:'samsung-browser-werbung-blockieren', title:'Samsung Browser Werbung blockieren'},
+        {id:'xiaomi-werbung-blockieren', title:'Xiaomi Werbung blockieren'}
+      ]},
+      'smart-home': { title: 'SMART HOME', handouts: [
+        {id:'energie-und-komfort', title:'Energie und Komfort'},
+        {id:'smart-home-einleitung', title:'Smart Home'},
+        {id:'sturz-apps-und-geraete', title:'Sturz-Apps und -Geräte'}
+      ]},
+      'tipps-und-tricks': { title:'TIPPS UND TRICKS', handouts: [
+        {id:'apps-und-tabs-schliessen', title:'Apps und Tabs schließen'},
+        {id:'bildschirm-ruhezustand-apple', title:'Bildschirm Ruhezustand Apple'},
+        {id:'bildschirm-ruhezustand-google', title:'Bildschirm Ruhezustand Google'},
+        {id:'bildschirm-ruhezustand-samsung', title:'Bildschirm Ruhezustand Samsung'},
+        {id:'funktionstasten', title:'Funktionstasten'},
+        {id:'schriftgroesse-aendern-apple', title:'Schriftgröße ändern Apple'},
+        {id:'schriftgroesse-aendern-google', title:'Schriftgröße ändern Google'},
+        {id:'schriftgroesse-aendern-samsung', title:'Schriftgröße ändern Samsung'},
+        {id:'screenshots-machen', title:'Screenshots machen'},
+        {id:'wlan-einrichten-android', title:'WLAN einrichten Android'},
+        {id:'wlan-einrichten-apple', title:'WLAN einrichten Apple'}
+      ]},
+       'unterhaltung': { title: 'UNTERHALTUNG', handouts: [
+        {id: 'ard-audiothek', title:'ARD Audiothek'}, 
+        {id:'fotos-whatsapp', title:'Fotos versenden mit WhatsApp'},
+        {id: 'spotify', title:'Spotify'},
+        {id:'whatsapp', title:'WhatsApp'}
+      ]}
+    };
+
+    const ArrowLeft = () => (
+      React.createElement('svg', { width: "24", height: "24", viewBox: "0 0 24 24"   , fill: "none", xmlns: "http://www.w3.org/2000/svg", __self: this, __source: {fileName: _jsxFileName, lineNumber: 71}}
+        , React.createElement('path', { d: "M15 18L9 12L15 6"   , stroke: "#333", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", __self: this, __source: {fileName: _jsxFileName, lineNumber: 72}})
+      )
+    );
+
+    const ArrowRight = () => (
+      React.createElement('svg', { width: "24", height: "24", viewBox: "0 0 24 24"   , fill: "none", xmlns: "http://www.w3.org/2000/svg", __self: this, __source: {fileName: _jsxFileName, lineNumber: 77}}
+        , React.createElement('path', { d: "M9 18L15 12L9 6"   , stroke: "#333", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", __self: this, __source: {fileName: _jsxFileName, lineNumber: 78}})
+      )
+    );
+
+    const DownloadIcon = () => (React.createElement('svg', { viewBox: "0 0 24 24"   , xmlns: "http://www.w3.org/2000/svg", __self: this, __source: {fileName: _jsxFileName, lineNumber: 82}}, React.createElement('path', { d: "M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"    , __self: this, __source: {fileName: _jsxFileName, lineNumber: 82}})));
+
+    const SearchIcon = () => (
+      React.createElement('svg', { viewBox: "0 0 24 24"   , xmlns: "http://www.w3.org/2000/svg", __self: this, __source: {fileName: _jsxFileName, lineNumber: 85}}
+        , React.createElement('path', { d: "M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"                                         , fill: "currentColor", __self: this, __source: {fileName: _jsxFileName, lineNumber: 86}})
+      )
+    );
+
+    // Smart Search Klasse mit Fuzzy-Suche
+    class SmartSearch {
+      constructor(data, options = {}) {
+        this.data = data;
+        this.threshold = options.threshold || 0.4;
+        this.keys = options.keys || ['title'];
+      }
+
+      levenshteinDistance(str1, str2) {
+        str1 = str1.toLowerCase();
+        str2 = str2.toLowerCase();
+        
+        const matrix = [];
+        for (let i = 0; i <= str2.length; i++) {
+          matrix[i] = [i];
+        }
+        for (let j = 0; j <= str1.length; j++) {
+          matrix[0][j] = j;
+        }
+        
+        for (let i = 1; i <= str2.length; i++) {
+          for (let j = 1; j <= str1.length; j++) {
+            if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+              matrix[i][j] = matrix[i - 1][j - 1];
+            } else {
+              matrix[i][j] = Math.min(
+                matrix[i - 1][j - 1] + 1,
+                matrix[i][j - 1] + 1,
+                matrix[i - 1][j] + 1
+              );
+            }
+          }
+        }
+        return matrix[str2.length][str1.length];
+      }
+
+      similarity(str1, str2) {
+        const longer = str1.length > str2.length ? str1 : str2;
+        const shorter = str1.length > str2.length ? str2 : str1;
+        if (longer.length === 0) return 1.0;
+        const distance = this.levenshteinDistance(longer, shorter);
+        return (longer.length - distance) / longer.length;
+      }
+
+      search(query) {
+        if (!query || query.trim() === '') return [];
+        
+        query = query.toLowerCase().trim();
+        const results = [];
+
+        this.data.forEach(item => {
+          let maxScore = 0;
+          
+          this.keys.forEach(key => {
+            const value = String(item[key]).toLowerCase();
+            
+            // Exakte Übereinstimmung
+            if (value.includes(query)) {
+              maxScore = 1.0;
+              return;
+            }
+            
+            // Fuzzy-Matching
+            const fieldScore = this.similarity(query, value);
+            const words = value.split(/\s+/);
+            
+            words.forEach(word => {
+              const wordScore = this.similarity(query, word);
+              maxScore = Math.max(maxScore, wordScore);
+            });
+            
+            maxScore = Math.max(maxScore, fieldScore);
+          });
+          
+          if (maxScore >= this.threshold) {
+            results.push({ ...item, score: maxScore });
+          }
+        });
+        
+        return results.sort((a, b) => b.score - a.score);
+      }
+    }
+
+    function App(){
+      const [view, setView] = useState('categories');
+      const [selectedCategory, setSelectedCategory] = useState(null);
+      const [selectedHandout, setSelectedHandout] = useState(null);
+      const [currentPage, setCurrentPage] = useState(0);
+      const [isZoomed, setIsZoomed] = useState(false);
+      const [availablePages, setAvailablePages] = useState([]);
+      const [imageError, setImageError] = useState(false);
+      const [isLoading, setIsLoading] = useState(false);
+      const [pdfAvailable, setPdfAvailable] = useState(false);
+      const [searchQuery, setSearchQuery] = useState('');
+      const [searchResults, setSearchResults] = useState([]);
+
+      // Alle Handouts für Suche vorbereiten
+      const allHandouts = Object.keys(categoriesConfig).flatMap(categoryId =>
+        categoriesConfig[categoryId].handouts.map(handout => ({
+          ...handout,
+          categoryId,
+          categoryTitle: categoriesConfig[categoryId].title
+        }))
+      );
+
+      const searcher = new SmartSearch(allHandouts, {
+        keys: ['title', 'categoryTitle'],
+        threshold: 0.3
+      });
+
+      // Kollisionserkennung für Zurück-Button mit Titel/Logo UND rechter Rand
+      useEffect(() => {
+        const checkCollision = () => {
+          const homeButton = document.querySelector('.home-button');
+          const titleContainer = document.querySelector('.title-container');
+          const logo = _optionalChain([titleContainer, 'optionalAccess', _ => _.querySelector, 'call', _2 => _2('img')]);
+          
+          if (!titleContainer) return;
+          
+          const containerRect = document.querySelector('.container').getBoundingClientRect();
+          const titleRect = titleContainer.getBoundingClientRect();
+          const logoRect = _optionalChain([logo, 'optionalAccess', _3 => _3.getBoundingClientRect, 'call', _4 => _4()]);
+          
+          // Standard-Werte
+          let newPaddingLeft = 20;
+          let newGap = 12;
+          let newLogoHeight = 35;
+          
+          // 1. Prüfe Kollision mit Zurück-Button (links)
+          if (homeButton) {
+            const buttonRect = homeButton.getBoundingClientRect();
+            const buffer = 10;
+            const collision = !(
+              buttonRect.right + buffer < titleRect.left ||
+              buttonRect.left > titleRect.right + buffer ||
+              buttonRect.bottom + buffer < titleRect.top ||
+              buttonRect.top > titleRect.bottom + buffer
+            );
+            
+            if (collision) {
+              const overlap = (buttonRect.right + buffer) - titleRect.left;
+              newPaddingLeft = 20 + overlap + 10;
+            }
+          }
+          
+          // 2. Prüfe ob Logo am rechten Rand rausgeht (mit großzügigerem Puffer)
+          if (logo && logoRect) {
+            const rightEdge = containerRect.right - 25; // 25px Puffer rechts (mehr als vorher)
+            const logoRight = logoRect.right;
+            
+            if (logoRight > rightEdge) {
+              const overflow = logoRight - rightEdge + 5; // +5px extra Sicherheit
+              
+              // Strategie 1: Gap verringern (von 12px bis minimal 2px)
+              const maxGapReduction = 10; // Mehr Gap-Reduzierung erlauben
+              const gapReduction = Math.min(overflow, maxGapReduction);
+              newGap = Math.max(2, 12 - gapReduction);
+              
+              // Strategie 2: Logo verkleinern
+              const remainingOverflow = overflow - gapReduction;
+              if (remainingOverflow > 0) {
+                // Logo aggressiver verkleinern
+                newLogoHeight = Math.max(16, 35 - remainingOverflow * 1.2);
+                
+                // Für sehr kleine Bildschirme noch kleiner
+                if (window.innerWidth <= 360) {
+                  newLogoHeight = Math.max(14, newLogoHeight);
+                }
+              }
+            }
+          }
+          
+          // Werte anwenden
+          titleContainer.style.paddingLeft = `${newPaddingLeft}px`;
+          titleContainer.style.gap = `${newGap}px`;
+          if (logo) {
+            logo.style.height = `${newLogoHeight}px`;
+          }
+        };
+        
+        // Prüfe bei verschiedenen Events
+        checkCollision();
+        window.addEventListener('resize', checkCollision);
+        window.addEventListener('orientationchange', checkCollision);
+        
+        // Mehrere verzögerte Prüfungen für bessere Zuverlässigkeit
+        const timeoutId1 = setTimeout(checkCollision, 50);
+        const timeoutId2 = setTimeout(checkCollision, 150);
+        const timeoutId3 = setTimeout(checkCollision, 300);
+        
+        return () => {
+          window.removeEventListener('resize', checkCollision);
+          window.removeEventListener('orientationchange', checkCollision);
+          clearTimeout(timeoutId1);
+          clearTimeout(timeoutId2);
+          clearTimeout(timeoutId3);
+        };
+      }, [view, selectedCategory]); // Prüfe neu wenn sich die Ansicht ändert
+
+      const goHome = () => { 
+        setView('categories'); 
+        setSelectedCategory(null); 
+        setSelectedHandout(null); 
+        setCurrentPage(0); 
+        setIsZoomed(false); 
+        setAvailablePages([]); 
+        setPdfAvailable(false);
+        setSearchQuery('');
+        setSearchResults([]);
+      };
+
+      const goBackToCategory = () => { 
+        setView('handouts'); 
+        setSelectedHandout(null); 
+        setCurrentPage(0); 
+        setIsZoomed(false); 
+        setAvailablePages([]); 
+        setPdfAvailable(false); 
+      };
+
+      const goBackToSearch = () => {
+        setView('search');
+        setSelectedHandout(null);
+        setCurrentPage(0);
+        setIsZoomed(false);
+        setAvailablePages([]);
+        setPdfAvailable(false);
+      };
+
+      const selectCategory = (categoryId) => { 
+        setSelectedCategory(categoryId); 
+        setView('handouts'); 
+      };
+
+      const openSearch = () => {
+        setView('search');
+        setSearchQuery('');
+        setSearchResults([]);
+      };
+
+      const selectHandout = async (handout, categoryId, fromSearch = false) => {
+        setIsLoading(true);
+        setSelectedHandout({ ...handout, categoryId, fromSearch });
+        setCurrentPage(0);
+        setView('viewer');
+        setIsZoomed(false);
+        const pages = await loadAvailablePages(categoryId, handout.id);
+        setAvailablePages(pages);
+        const pdfExists = await checkPdfExists(categoryId, handout.id);
+        setPdfAvailable(pdfExists);
+        setIsLoading(false);
+      };
+
+      const handleSearch = (query) => {
+        setSearchQuery(query);
+        if (query.trim() === '') {
+          setSearchResults([]);
+        } else {
+          const results = searcher.search(query);
+          setSearchResults(results);
+        }
+      };
+
+      const loadAvailablePages = async (categoryId, handoutId) => {
+        const extensions = ['jpg','jpeg','png'];
+        const foundPages = [];
+        for (let i=1;i<=50;i++){
+          let pageFound = false;
+          for (let ext of extensions){
+            const filename = `bilder/${categoryId}_${handoutId}_${i}.${ext}`;
+            try {
+              const exists = await checkImageExists(filename);
+              if (exists) { foundPages.push(filename); pageFound = true; break; }
+            } catch(e){}
+          }
+          if (!pageFound) break;
+        }
+        return foundPages;
+      };
+
+      const checkImageExists = (url) => new Promise((resolve)=>{
+        const img = new Image();
+        const timeout = setTimeout(()=>{ img.src=''; resolve(false); }, 3000);
+        img.onload = ()=>{ clearTimeout(timeout); resolve(true); };
+        img.onerror = ()=>{ clearTimeout(timeout); resolve(false); };
+        img.src = url;
+      });
+
+      const checkPdfExists = async (categoryId, handoutId) => {
+        const pdfPath = `handouts/${categoryId}_${handoutId}.pdf`;
+        try {
+          const response = await fetch(pdfPath, { method: 'HEAD' });
+          return response.ok;
+        } catch(e) {
+          return false;
+        }
+      };
+
+      const downloadPdf = () => {
+        if (!selectedHandout || !pdfAvailable) return;
+        const pdfPath = `handouts/${selectedHandout.categoryId}_${selectedHandout.id}.pdf`;
+        const link = document.createElement('a');
+        link.href = pdfPath;
+        link.download = `${selectedHandout.title}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      };
+
+      const nextPage = ()=>{ if (currentPage < availablePages.length -1){ setCurrentPage(currentPage+1); setIsZoomed(false); setImageError(false);} };
+      const prevPage = ()=>{ if (currentPage > 0){ setCurrentPage(currentPage-1); setIsZoomed(false); setImageError(false);} };
+      const toggleZoom = ()=>{ if (!imageError) setIsZoomed(!isZoomed); };
+      const handleImageError = ()=> setImageError(true);
+      const handleImageLoad = ()=> setImageError(false);
+
+      return (
+        React.createElement(React.Fragment, null
+          , view === 'handouts' && (React.createElement('button', { className: "home-button", onClick: goHome, __self: this, __source: {fileName: _jsxFileName, lineNumber: 407}}, React.createElement(ArrowLeft, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 407}} )))
+          , view === 'search' && (React.createElement('button', { className: "home-button", onClick: goHome, __self: this, __source: {fileName: _jsxFileName, lineNumber: 408}}, React.createElement(ArrowLeft, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 408}} )))
+          , view === 'viewer' && (
+            React.createElement('button', { className: "home-button", onClick: _optionalChain([selectedHandout, 'optionalAccess', _5 => _5.fromSearch]) ? goBackToSearch : goBackToCategory, __self: this, __source: {fileName: _jsxFileName, lineNumber: 410}}
+              , React.createElement(ArrowLeft, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 411}} )
+            )
+          )
+
+          , view === 'categories' && (
+            React.createElement(React.Fragment, null
+              , React.createElement('div', { className: "title-container", __self: this, __source: {fileName: _jsxFileName, lineNumber: 417}}
+                , React.createElement('h1', { className: "title", __self: this, __source: {fileName: _jsxFileName, lineNumber: 418}}, "Kategorien")
+                , React.createElement('img', { src: "logo.png", alt: "Logo", __self: this, __source: {fileName: _jsxFileName, lineNumber: 419}} )
+              )
+              , React.createElement('div', { className: "category-grid", __self: this, __source: {fileName: _jsxFileName, lineNumber: 421}}
+                , Object.keys(categoriesConfig).map(categoryId => (
+                  React.createElement('button', { key: categoryId, className: "category-button", onClick: ()=>selectCategory(categoryId), __self: this, __source: {fileName: _jsxFileName, lineNumber: 423}}
+                    , categoriesConfig[categoryId].title
+                  )
+                ))
+              )
+              , React.createElement('button', { className: "search-button", onClick: openSearch, __self: this, __source: {fileName: _jsxFileName, lineNumber: 428}}, "Handouts durchsuchen"
+
+              )
+              , React.createElement('button', { className: "impressum-button", onClick: () => window.open('https://ash-sprungbrett.de/kontakt/', '_blank'), __self: this, __source: {fileName: _jsxFileName, lineNumber: 431}}, "Impressum"
+
+              )
+            )
+          )
+
+          , view === 'search' && (
+            React.createElement(React.Fragment, null
+              , React.createElement('h1', { className: "title", __self: this, __source: {fileName: _jsxFileName, lineNumber: 439}}, "Suche")
+              , React.createElement('div', { className: "search-container", __self: this, __source: {fileName: _jsxFileName, lineNumber: 440}}
+                , React.createElement('div', { className: "search-input-wrapper", __self: this, __source: {fileName: _jsxFileName, lineNumber: 441}}
+                  , React.createElement('input', {
+                    type: "text",
+                    className: "search-input",
+                    placeholder: "Nach Handouts suchen..."  ,
+                    value: searchQuery,
+                    onChange: (e) => handleSearch(e.target.value),
+                    autoFocus: true, __self: this, __source: {fileName: _jsxFileName, lineNumber: 442}}
+                  )
+                )
+
+                , React.createElement('div', { className: "search-results-container", __self: this, __source: {fileName: _jsxFileName, lineNumber: 452}}
+                  , searchQuery === '' ? (
+                    React.createElement('div', { className: "no-search-results", __self: this, __source: {fileName: _jsxFileName, lineNumber: 454}}
+                      , React.createElement('div', { className: "no-search-results-icon", __self: this, __source: {fileName: _jsxFileName, lineNumber: 455}}, "🔍")
+                      , React.createElement('div', { className: "no-search-results-text", __self: this, __source: {fileName: _jsxFileName, lineNumber: 456}}, "Suche nach Handouts"  )
+                      , React.createElement('div', { className: "no-search-results-hint", __self: this, __source: {fileName: _jsxFileName, lineNumber: 457}}
+                      )
+                    )
+                  ) : searchResults.length === 0 ? (
+                    React.createElement('div', { className: "no-search-results", __self: this, __source: {fileName: _jsxFileName, lineNumber: 461}}
+                      , React.createElement('div', { className: "no-search-results-icon", __self: this, __source: {fileName: _jsxFileName, lineNumber: 462}}, "😕")
+                      , React.createElement('div', { className: "no-search-results-text", __self: this, __source: {fileName: _jsxFileName, lineNumber: 463}}, "Keine Ergebnisse" )
+                      , React.createElement('div', { className: "no-search-results-hint", __self: this, __source: {fileName: _jsxFileName, lineNumber: 464}}, "Versuche es mit anderen Begriffen"
+
+                      )
+                    )
+                  ) : (
+                    searchResults.map((result, index) => (
+                      React.createElement('div', {
+                        key: index,
+                        className: "search-result-item",
+                        onClick: () => selectHandout(result, result.categoryId, true), __self: this, __source: {fileName: _jsxFileName, lineNumber: 470}}
+
+                        , React.createElement('div', { className: "search-result-title", __self: this, __source: {fileName: _jsxFileName, lineNumber: 475}}, result.title)
+                        , React.createElement('div', { className: "search-result-category", __self: this, __source: {fileName: _jsxFileName, lineNumber: 476}}, result.categoryTitle)
+                        , React.createElement('div', { className: "search-result-match", __self: this, __source: {fileName: _jsxFileName, lineNumber: 477}}, "Übereinstimmung: "
+                           , Math.round(result.score * 100), "%"
+                        )
+                      )
+                    ))
+                  )
+                )
+              )
+            )
+          )
+
+          , view === 'handouts' && selectedCategory && (
+            React.createElement(React.Fragment, null
+              , React.createElement('div', { className: "title-container", __self: this, __source: {fileName: _jsxFileName, lineNumber: 490}}
+                , React.createElement('h1', { className: "title", __self: this, __source: {fileName: _jsxFileName, lineNumber: 491}}, categoriesConfig[selectedCategory].title)
+                , React.createElement('img', { src: "logo.png", alt: "Logo", __self: this, __source: {fileName: _jsxFileName, lineNumber: 492}} )
+              )
+              , React.createElement('div', { className: "category-grid", __self: this, __source: {fileName: _jsxFileName, lineNumber: 494}}
+                , categoriesConfig[selectedCategory].handouts.map((handout, index)=>(
+                  React.createElement('button', { key: index, className: "handout-button", onClick: ()=>selectHandout(handout, selectedCategory), __self: this, __source: {fileName: _jsxFileName, lineNumber: 496}}, handout.title)
+                ))
+              )
+            )
+          )
+
+          , view === 'viewer' && selectedHandout && (
+            React.createElement('div', { className: "viewer-container", __self: this, __source: {fileName: _jsxFileName, lineNumber: 503}}
+              , isLoading ? React.createElement('div', { className: "loading", __self: this, __source: {fileName: _jsxFileName, lineNumber: 504}}, "Lade Bilder..." ) :
+               availablePages.length === 0 ? (
+                 React.createElement(React.Fragment, null
+                   , React.createElement('div', { className: "error-message", __self: this, __source: {fileName: _jsxFileName, lineNumber: 507}}, "❌ Keine Bilder gefunden"
+                        , React.createElement('br', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 508}}), React.createElement('br', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 508}}), "Erwarteter Pfad:"
+                      , React.createElement('br', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 509}})
+                     , React.createElement('strong', { style: {color:'#333', fontSize:'14px', display:'inline-block', marginTop:'10px', padding:'8px 16px', background:'#f0f0f0', borderRadius:'8px', border:'1px solid #d0d0d0'}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 510}}, "bilder/"
+                       , selectedHandout.categoryId, "_", selectedHandout.id, "_1.jpg"
+                     )
+                     , React.createElement('br', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 513}}), React.createElement('br', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 513}})
+                     , React.createElement('span', { style: {fontSize:'14px', color:'#666'}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 514}}, "Erstellen Sie einen Ordner \"bilder\" neben der HTML-Datei und legen Sie dort Ihre Bilder ab."              )
+                     , React.createElement('br', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 515}}), React.createElement('br', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 515}})
+                     , !pdfAvailable && (
+                       React.createElement(React.Fragment, null, "❌ Kein PDF gefunden"
+                            , React.createElement('br', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 518}}), React.createElement('br', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 518}}), "Erwarteter Pfad:"
+                          , React.createElement('br', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 519}})
+                         , React.createElement('strong', { style: {color:'#333', fontSize:'14px', display:'inline-block', marginTop:'10px', padding:'8px 16px', background:'#f0f0f0', borderRadius:'8px', border:'1px solid #d0d0d0'}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 520}}, "handouts/"
+                           , selectedHandout.categoryId, "_", selectedHandout.id, ".pdf"
+                         )
+                         , React.createElement('br', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 523}}), React.createElement('br', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 523}})
+                         , React.createElement('span', { style: {fontSize:'14px', color:'#666'}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 524}}, "Erstellen Sie einen Ordner \"handouts\" neben der HTML-Datei und legen Sie dort Ihre PDFs ab."              )
+                       )
+                     )
+                   )
+                   , pdfAvailable && (
+                     React.createElement('button', { 
+                       className: "download-button",
+                       onClick: downloadPdf, __self: this, __source: {fileName: _jsxFileName, lineNumber: 529}}
+
+                       , React.createElement(DownloadIcon, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 533}} ), "Handout als PDF herunterladen"
+
+                     )
+                   )
+                 )
+               ) : (
+                 React.createElement(React.Fragment, null
+                   , React.createElement('div', { className: `image-viewer ${isZoomed ? 'zoomed' : ''}`, __self: this, __source: {fileName: _jsxFileName, lineNumber: 540}}
+                     , imageError ? React.createElement('div', { className: "error-message", __self: this, __source: {fileName: _jsxFileName, lineNumber: 541}}, "Bild konnte nicht geladen werden"    ) :
+                       React.createElement('img', { src: availablePages[currentPage], alt: `Schritt ${currentPage+1}`, onClick: toggleZoom, onError: handleImageError, onLoad: handleImageLoad, __self: this, __source: {fileName: _jsxFileName, lineNumber: 542}} )
+                   )
+                   , React.createElement('div', { className: "navigation", __self: this, __source: {fileName: _jsxFileName, lineNumber: 544}}
+                     , React.createElement('button', { className: "nav-button", onClick: prevPage, disabled: currentPage===0, __self: this, __source: {fileName: _jsxFileName, lineNumber: 545}}, React.createElement(ArrowLeft, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 545}} ))
+                     , React.createElement('div', { className: "page-indicator", __self: this, __source: {fileName: _jsxFileName, lineNumber: 546}}, "Schritt " , currentPage+1, " von "  , availablePages.length)
+                     , React.createElement('button', { className: "nav-button", onClick: nextPage, disabled: currentPage===availablePages.length-1, __self: this, __source: {fileName: _jsxFileName, lineNumber: 547}}, React.createElement(ArrowRight, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 547}} ))
+                   )
+                   , React.createElement('button', { 
+                     className: `download-button ${!pdfAvailable ? 'disabled' : ''}`,
+                     onClick: downloadPdf,
+                     disabled: !pdfAvailable, __self: this, __source: {fileName: _jsxFileName, lineNumber: 549}}
+
+                     , React.createElement(DownloadIcon, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 554}} )
+                     , pdfAvailable ? 'Handout als PDF herunterladen' : 'Kein PDF verfügbar'
+                   )
+                 )
+               )
+            )
+          )
+        )
+      );
+    }
+
+    ReactDOM.render(React.createElement(App, {__self: this, __source: {fileName: _jsxFileName, lineNumber: 565}} ), document.getElementById('app'));
+
+  </script>
+
+  <!-- dynamische --vh Variable setzen (für iOS/Android adressbar issues) -->
+  <script>
+    function setVhVar(){
+      document.documentElement.style.setProperty('--vh', (window.innerHeight * 0.01) + 'px');
+    }
+    setVhVar();
+    window.addEventListener('resize', setVhVar);
+    window.addEventListener('orientationchange', setVhVar);
+  </script>
+</body>
+</html>
