@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <link rel="shortcut icon" href="https://ash-sprungbrett.de/wp-content/uploads/2024/08/Favicon.svg" type="image/x-icon">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <title>Handreichungen-Digital</title>
+  <style>
+    :root {
+      --c-orange:    #F26522;
+      --c-orange-dk: #C94F10;
+      --c-orange-xl: #FEF0E8;
+      --c-orange-md: #FDDCC8;
+      --c-ink:       #18181B;
+      --c-ink-2:     #3F3F46;
+      --c-ink-3:     #71717A;
+      --c-ink-4:     #A1A1AA;
+      --c-surface:   #FAFAF9;
+      --c-panel:     #FFFFFF;
+      --c-line:      #E8E8E4;
+      --c-line-dk:   #D4D4CF;
+      --vh: 1vh;
+    }
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { height:100%; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      background: linear-gradient(180deg,#fff 0%,#fffaf6 100%);
+      -webkit-text-size-adjust: 100%;
+      touch-action: manipulation;
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* ─── Shell ─── */
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      height: calc(var(--vh,1vh) * 100);
+      background: var(--c-panel);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      margin: 0 auto;
+    }
+
+    /* ─── Top bar ─── */
+    .topbar {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px 20px 0;
+      position: relative;
+      min-height: 64px;
+    }
+
+    .home-button {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 40px;
+      height: 40px;
+      background: var(--c-orange-xl);
+      border: 1.5px solid var(--c-orange-md);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+      transition: background .15s, border-color .15s, transform .1s;
+      z-index: 10;
+    }
+
+    .home-button:active {
+      background: var(--c-orange);
+      border-color: var(--c-orange);
+      transform: translateY(-50%) scale(.93);
+    }
+
+    .home-button svg { display:block; }
+    .home-button svg path { stroke: var(--c-orange); transition: stroke .15s; }
+    .home-button:active svg path { stroke: #fff; }
+
+    .topbar-title {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--c-ink-3);
+    }
+
+    .topbar-logo {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 28px;
+      width: auto;
+      object-fit: contain;
+    }
+
+    /* ─── Hero header (categories view) ─── */
+    .hero {
+      flex-shrink: 0;
+      padding: 20px 20px 0;
+    }
+
+    .hero-eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--c-orange);
+      margin-bottom: 6px;
+    }
+
+    .hero-title {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--c-ink);
+      line-height: 1.15;
+      letter-spacing: -0.5px;
+    }
+
+    /* ─── Divider ─── */
+    .divider {
+      flex-shrink: 0;
+      height: 1px;
+      background: var(--c-line);
+      margin: 16px 20px 0;
+    }
+
+    /* ─── Scroll areas ─── */
+    .scroll-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px 20px calc(20px + env(safe-area-inset-bottom,0px));
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      min-height: 0;
+    }
+
+    .scroll-area::-webkit-scrollbar { display:none; }
+
+    /* ─── Category list ─── */
+    .cat-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .category-button {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      width: 100%;
+      padding: 16px 18px;
+      background: linear-gradient(180deg,#fff 0%,#fffaf6 100%);
+      border: 1.5px solid var(--c-line);
+      border-radius: 16px;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+      transition: border-color .15s, background .15s, transform .1s;
+    }
+
+    .category-button:active {
+      border-color: var(--c-orange);
+      background: var(--c-orange-xl);
+      transform: scale(.985);
+    }
+
+    .cat-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: var(--c-orange-xl);
+      border: 1.5px solid var(--c-orange-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 19px;
+      line-height: 1;
+    }
+
+    .cat-text {
+      flex: 1;
+      text-align: left;
+    }
+
+    .cat-name {
+      display: block;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--c-ink);
+      letter-spacing: 0.2px;
+    }
+
+    .cat-count {
+      display: block;
+      font-size: 16px;
+      color: var(--c-ink-3);
+      margin-top: 2px;
+      font-weight: 500;
+    }
+
+    .cat-arrow {
+      color: var(--c-orange);
+      font-size: 20px;
+      font-weight: 300;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    /* ─── Search button (bottom of category list) ─── */
+    .search-btn-wrap {
+      margin-top: 16px;
+    }
+
+    .search-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 16px 20px;
+      background: var(--c-ink);
+      color: #fff;
+      border: none;
+      border-radius: 16px;
+      font-family: inherit;
+      font-size: 19px;
+      background: var(--c-ink-2);
+      transform: scale(.98);
+    }
+
+    .search-button svg { width:18px; height:18px; fill:#fff; flex-shrink:0; }
+
+    /* ─── Impressum ─── */
+    .impressum-button {
+      display: block;
+      width: 100%;
+      margin-top: 10px;
+      padding: 10px;
+      background: transparent;
+      border: none;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--c-ink-4);
+      cursor: pointer;
+      text-align: center;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+      transition: color .15s;
+    }
+
+    .impressum-button:active { color: var(--c-orange); }
+
+    /* ─── Handreichung list ─── */
+    .handout-button {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      width: 100%;
+      padding: 16px 18px;
+      background: linear-gradient(180deg,#fff 0%,#fffaf6 100%);
+      border: 1.5px solid var(--c-line);
+      border-radius: 14px;
+      font-family: inherit;
+      font-size: 19px;
+      transition: border-color .15s, background .15s, transform .1s;
+      margin-bottom: 8px;
+    }
+
+    .handout-button:active {
+      border-color: var(--c-orange);
+      background: var(--c-orange-xl);
+      transform: scale(.985);
+    }
+
+    .handout-bullet {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--c-orange);
+      flex-shrink: 0;
+      opacity: .6;
+    }
+
+    .handout-arrow {
+      margin-left: auto;
+      flex-shrink: 0;
+      color: var(--c-ink-4);
+      font-size: 18px;
+      font-weight: 300;
+    }
+
+    /* ─── Search view ─── */
+    .search-header {
+      flex-shrink: 0;
+      padding: 16px 20px 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: 64px;
+    }
+
+    .search-input-wrapper {
+      flex: 1;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 12px 44px 12px 16px;
+      font-family: inherit;
+      font-size: 19px;
+    }
+
+    .search-input:focus {
+      border-color: var(--c-orange);
+      background: #fff;
+    }
+
+    .search-input::placeholder { color: var(--c-ink-4); }
+
+    .search-icon-input {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+
+    .search-icon-input svg { width:18px; height:18px; fill: var(--c-orange); }
+
+    .search-results-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 20px calc(20px + env(safe-area-inset-bottom,0px));
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      min-height: 0;
+    }
+
+    .search-results-container::-webkit-scrollbar { display:none; }
+
+    .search-result-item {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      padding: 14px 16px;
+      margin-bottom: 8px;
+      background: linear-gradient(180deg,#fff 0%,#fffaf6 100%);
+      border: 1.5px solid var(--c-line);
+      border-radius: 12px;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+      transition: border-color .15s, background .15s, transform .1s;
+    }
+
+    .search-result-item:active {
+      border-color: var(--c-orange);
+      background: var(--c-orange-xl);
+      transform: scale(.98);
+    }
+
+    .search-result-title { font-size: 19px; font-weight: 700; color: var(--c-ink); }
+    .search-result-category { font-size: 16px; font-weight: 600; color: var(--c-ink-3); letter-spacing: .5px; text-transform: uppercase; }
+    .search-result-match { font-size: 16px; color: var(--c-orange); font-weight: 600; }
+
+    .no-search-results {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      gap: 8px;
+    }
+
+    .no-search-results-icon { font-size: 48px; }
+    .no-search-results-text { font-size: 18px; font-weight: 700; color: var(--c-ink); }
+    .no-search-results-hint { font-size: 16px; color: var(--c-ink-4); text-align: center; }
+
+    /* ─── Viewer ─── */
+    .viewer-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px calc(16px + env(safe-area-inset-bottom,0px));
+      overflow-y: auto;
+      min-height: 0;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .viewer-container::-webkit-scrollbar { display:none; }
+
+    .image-viewer {
+      width: 100%;
+      background: linear-gradient(180deg,#fff 0%,#fffaf6 100%);
+      border-radius: 16px;
+      border: 1.5px solid var(--c-line);
+      overflow: hidden;
+      position: relative;
+      max-height: calc(var(--vh,1vh) * 100 - 196px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 1;
+    }
+
+    .image-viewer img {
+      max-width:100%; max-height:100%;
+      width:auto; height:auto;
+      display:block;
+      object-fit:contain;
+      cursor:zoom-in;
+      user-select:none;
+      -webkit-user-select:none;
+      -webkit-touch-callout:none;
+    }
+
+    .image-viewer.zoomed { overflow:auto; }
+    .image-viewer.zoomed img { cursor:zoom-out; transform:scale(2); transform-origin:top left; }
+
+    /* ─── Navigation bar ─── */
+    .navigation {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-shrink: 0;
+      width: 100%;
+    }
+
+    .nav-button {
+      width: 52px;
+      height: 52px;
+      background: linear-gradient(180deg,#fff 0%,#fffaf6 100%);
+      border: 1.5px solid var(--c-line-dk);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+      flex-shrink: 0;
+      transition: background .15s, border-color .15s, transform .1s;
+    }
+
+    .nav-button:active:not(:disabled) {
+      background: var(--c-ink);
+      border-color: var(--c-ink);
+      transform: scale(.92);
+    }
+
+    .nav-button:disabled { opacity: .35; cursor: not-allowed; }
+    .nav-button svg path { stroke: var(--c-ink); transition: stroke .15s; }
+    .nav-button:active:not(:disabled) svg path { stroke: #fff; }
+
+    .page-indicator {
+      flex: 1;
+      text-align: center;
+      background: linear-gradient(180deg,#fff 0%,#fffaf6 100%);
+      border: 1.5px solid var(--c-line-dk);
+      border-radius: 14px;
+      padding: 14px 10px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--c-ink);
+    }
+
+    /* ─── Download button ─── */
+    .download-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 17px 20px;
+      background: var(--c-orange);
+      color: #fff;
+      border: none;
+      border-radius: 16px;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+      letter-spacing: 0.2px;
+      flex-shrink: 0;
+      transition: background .15s, transform .1s;
+    }
+
+    .download-button:active { background: var(--c-orange-dk); transform: scale(.98); }
+    .download-button.disabled { background: var(--c-line-dk); color: var(--c-ink-4); cursor: not-allowed; }
+    .download-button svg { width:20px; height:20px; fill:currentColor; }
+
+    /* ─── Misc ─── */
+    .error-message { padding:20px; text-align:center; color:#B91C1C; font-weight:600; line-height:1.8; font-size:14px; }
+    .loading {
+      text-align:center;
+      padding: 40px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--c-ink-3);
+      letter-spacing: .5px;
+    }
+
+    /* ─── Responsive ─── */
+    @media (max-width:640px) {
+      .container { max-width:100%; }
+      .cat-icon { width:38px; height:38px; border-radius:10px; font-size:17px; }
+      .category-button { padding:14px 14px; border-radius:14px; }
+      .cat-name { font-size:18px; }
+      .handout-button { font-size:18px; padding:14px 14px; }
+      .nav-button { width:46px; height:46px; border-radius:12px; }
+      .image-viewer { border-radius:12px; max-height:calc(var(--vh,1vh)*100 - 170px); }
+      .download-button { padding:15px 18px; font-size:16px; border-radius:14px; }
+      .search-input { font-size:18px; }
+    }
+
+    @media (max-width:380px) {
+      .cat-name { font-size:17px; }
+      .handout-button { font-size:17px; }
+      .image-viewer { max-height:calc(var(--vh,1vh)*100 - 155px); }
+    }
+  
+body::before{
+content:'';
+position:fixed;
+top:-200px;
+right:-150px;
+width:600px;
+height:600px;
+border-radius:50%;
+background:radial-gradient(circle,rgba(242,101,34,.12),transparent 70%);
+pointer-events:none;
+z-index:0;
+}
+.container{
+box-shadow:0 20px 60px rgba(0,0,0,.08);
+border-radius:32px;
+margin:24px auto;
+overflow:hidden;
+}
+.hero{
+padding:60px 40px 40px;
+background:linear-gradient(135deg,#fff,#fff4ec);
+border-bottom-left-radius:32px;
+border-bottom-right-radius:32px;
+}
+.hero-title{
+font-size:44px !important;
+}
+.category-button{
+border:none !important;
+border-radius:24px !important;
+padding:22px !important;
+box-shadow:0 8px 30px rgba(0,0,0,.06);
+background:#fff !important;
+}
+.category-button:hover{
+transform:translateY(-4px);
+}
+.cat-icon{
+width:56px !important;
+height:56px !important;
+border-radius:18px !important;
+}
+.search-button,.download-button{
+border-radius:999px !important;
+}
+.search-input{
+height:60px;
+border-radius:999px !important;
+border:none !important;
+box-shadow:0 8px 24px rgba(0,0,0,.08);
+}
+
+</style>
+</head>
+<body>
+  <div class="container" id="app"></div>
+
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+  <script>
+const _jsxFileName = ""; function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }    const { useState, useEffect } = React;
+
+    const categoriesConfig = {
+      'digitaler-alltag': { title: 'Digitaler Alltag', icon: '📱', handouts: [
+        {id:'apotheke-gesundde', title:'Apotheke gesund.de'},
+        {id:'db-app', title:'DB App'},
+        {id:'doctolib', title:'Doctolib'},
+        {id:'flaschenpost', title:'Flaschenpost'},
+        {id:'google-lens', title:'Google Lens'},
+        {id:'google-maps', title:'Google Maps'},
+        {id:'ki', title:'KI'},
+        {id:'mytherapy', title:'MyTherapy'},
+        {id:'notfallpass-android', title:'Notfallpass Android'},
+        {id:'notfallpass-iphone', title:'Notfallpass iPhone'},
+        {id:'online-banking', title:'Online Banking'},
+        {id:'online-shops', title:'Online Shops'},
+        {id:'payback-app', title:'Payback App'}
+      ]},
+      'handy-grundlagen': { title:'Handy Grundlagen', icon: '🔧', handouts: [
+        {id:'app-installieren', title:'App Installieren'},
+        {id:'bilder-bearbeiten', title:'Bilder bearbeiten'},
+        {id:'datenuebertragung-android', title:'Datenübertragung Android'},
+        {id:'datenuebertragung-iphone', title:'Datenübertragung iPhone'},
+        {id:'e-mails', title:'E-Mails lesen und schreiben'},
+        {id:'kalendereintrag', title:'Kalendereintrag'},
+        {id:'loeschungen-android', title:'Löschungen auf dem Android'},
+        {id:'loeschungen-iphone', title:'Löschungen auf einem iPhone durchführen'},
+        {id:'qr-code-android', title:'QR-Code Android'},
+        {id:'qr-code-ios', title:'QR-Code iOS'},
+        {id:'updates-handy', title:'Updates auf dem Handy installieren'}
+      ]},
+      'sicherheit': { title: 'Sicherheit', icon: '🔒', handouts: [
+        {id:'antivirus', title:'Antivirus'},
+        {id:'chrome-werbung-blockieren', title:'Chrome Werbung blockieren'},
+        {id:'datenschutz', title:'Datenschutz'},
+        {id:'nina-warnapp', title:'NINA - Warnapp'},
+        {id:'nora-notrufapp', title:'nora - Notrufapp'},
+        {id:'online-betrug', title:'Online-Betrug'},
+        {id:'passwortmanager', title:'Passwortmanager'},
+        {id:'safari-einstellungen', title:'Safari Einstellungen'},
+        {id:'samsung-browser-werbung-blockieren', title:'Samsung Browser Werbung blockieren'},
+        {id:'xiaomi-werbung-blockieren', title:'Xiaomi Werbung blockieren'}
+      ]},
+      'smart-home': { title: 'Smart Home', icon: '🏠', handouts: [
+        {id:'energie-und-komfort', title:'Energie und Komfort'},
+        {id:'smart-home-einleitung', title:'Smart Home'},
+        {id:'sturz-apps-und-geraete', title:'Sturz-Apps und -Geräte'}
+      ]},
+      'tipps-und-tricks': { title:'Tipps und Tricks', icon: '💡', handouts: [
+        {id:'apps-und-tabs-schliessen', title:'Apps und Tabs schließen'},
+        {id:'bildschirm-ruhezustand-apple', title:'Bildschirm Ruhezustand Apple'},
+        {id:'bildschirm-ruhezustand-google', title:'Bildschirm Ruhezustand Google'},
+        {id:'bildschirm-ruhezustand-samsung', title:'Bildschirm Ruhezustand Samsung'},
+        {id:'funktionstasten', title:'Funktionstasten'},
+        {id:'schriftgroesse-aendern-apple', title:'Schriftgröße ändern Apple'},
+        {id:'schriftgroesse-aendern-google', title:'Schriftgröße ändern Google'},
+        {id:'schriftgroesse-aendern-samsung', title:'Schriftgröße ändern Samsung'},
+        {id:'screenshots-machen', title:'Screenshots machen'},
+        {id:'wlan-einrichten-android', title:'WLAN einrichten Android'},
+        {id:'wlan-einrichten-apple', title:'WLAN einrichten Apple'}
+      ]},
+      'unterhaltung': { title: 'Unterhaltung', icon: '🎵', handouts: [
+        {id: 'ard-audiothek', title:'ARD Audiothek'},
+        {id:'fotos-whatsapp', title:'Fotos versenden mit WhatsApp'},
+        {id: 'spotify', title:'Spotify'},
+        {id:'whatsapp', title:'WhatsApp'}
+      ]}
+    };
+
+    const ArrowLeft = () => (
+      React.createElement('svg', { width:"22", height:"22", viewBox:"0 0 24 24", fill:"none", xmlns:"http://www.w3.org/2000/svg"}
+        , React.createElement('path', { d:"M15 18L9 12L15 6", stroke:"#18181B", strokeWidth:"2.5", strokeLinecap:"round", strokeLinejoin:"round"})
+      )
+    );
+
+    const ArrowRight = () => (
+      React.createElement('svg', { width:"22", height:"22", viewBox:"0 0 24 24", fill:"none", xmlns:"http://www.w3.org/2000/svg"}
+        , React.createElement('path', { d:"M9 18L15 12L9 6", stroke:"#18181B", strokeWidth:"2.5", strokeLinecap:"round", strokeLinejoin:"round"})
+      )
+    );
+
+    const DownloadIcon = () => (
+      React.createElement('svg', { viewBox:"0 0 24 24", xmlns:"http://www.w3.org/2000/svg"}
+        , React.createElement('path', { d:"M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"})
+      )
+    );
+
+    const SearchIcon = () => (
+      React.createElement('svg', { viewBox:"0 0 24 24", xmlns:"http://www.w3.org/2000/svg"}
+        , React.createElement('path', { d:"M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z", fill:"currentColor"})
+      )
+    );
+
+    class SmartSearch {
+      constructor(data, options = {}) {
+        this.data = data;
+        this.threshold = options.threshold || 0.4;
+        this.keys = options.keys || ['title'];
+      }
+      levenshteinDistance(str1, str2) {
+        str1 = str1.toLowerCase(); str2 = str2.toLowerCase();
+        const matrix = [];
+        for (let i = 0; i <= str2.length; i++) matrix[i] = [i];
+        for (let j = 0; j <= str1.length; j++) matrix[0][j] = j;
+        for (let i = 1; i <= str2.length; i++) {
+          for (let j = 1; j <= str1.length; j++) {
+            if (str2.charAt(i-1) === str1.charAt(j-1)) { matrix[i][j] = matrix[i-1][j-1]; }
+            else { matrix[i][j] = Math.min(matrix[i-1][j-1]+1, matrix[i][j-1]+1, matrix[i-1][j]+1); }
+          }
+        }
+        return matrix[str2.length][str1.length];
+      }
+      similarity(str1, str2) {
+        const longer = str1.length > str2.length ? str1 : str2;
+        const shorter = str1.length > str2.length ? str2 : str1;
+        if (longer.length === 0) return 1.0;
+        return (longer.length - this.levenshteinDistance(longer, shorter)) / longer.length;
+      }
+      search(query) {
+        if (!query || query.trim() === '') return [];
+        query = query.toLowerCase().trim();
+        const results = [];
+        this.data.forEach(item => {
+          let maxScore = 0;
+          this.keys.forEach(key => {
+            const value = String(item[key]).toLowerCase();
+            if (value.includes(query)) { maxScore = 1.0; return; }
+            const fieldScore = this.similarity(query, value);
+            const words = value.split(/\s+/);
+            words.forEach(word => { maxScore = Math.max(maxScore, this.similarity(query, word)); });
+            maxScore = Math.max(maxScore, fieldScore);
+          });
+          if (maxScore >= this.threshold) results.push({ ...item, score: maxScore });
+        });
+        return results.sort((a, b) => b.score - a.score);
+      }
+    }
+
+    function App(){
+      const [view, setView] = useState('categories');
+      const [selectedCategory, setSelectedCategory] = useState(null);
+      const [selectedHandreichung, setSelectedHandreichung] = useState(null);
+      const [currentPage, setCurrentPage] = useState(0);
+      const [isZoomed, setIsZoomed] = useState(false);
+      const [availablePages, setAvailablePages] = useState([]);
+      const [imageError, setImageError] = useState(false);
+      const [isLoading, setIsLoading] = useState(false);
+      const [pdfAvailable, setPdfAvailable] = useState(false);
+      const [searchQuery, setSearchQuery] = useState('');
+      const [searchResults, setSearchResults] = useState([]);
+
+      const allHandreichungen = Object.keys(categoriesConfig).flatMap(categoryId =>
+        categoriesConfig[categoryId].handouts.map(handout => ({
+          ...handout, categoryId, categoryTitle: categoriesConfig[categoryId].title
+        }))
+      );
+      const searcher = new SmartSearch(allHandreichungen, { keys: ['title', 'categoryTitle'], threshold: 0.3 });
+
+      const goHome = () => {
+        setView('categories'); setSelectedCategory(null); setSelectedHandreichung(null);
+        setCurrentPage(0); setIsZoomed(false); setAvailablePages([]); setPdfAvailable(false);
+        setSearchQuery(''); setSearchResults([]);
+      };
+      const goBackToCategory = () => {
+        setView('handouts'); setSelectedHandreichung(null); setCurrentPage(0);
+        setIsZoomed(false); setAvailablePages([]); setPdfAvailable(false);
+      };
+      const goBackToSearch = () => {
+        setView('search'); setSelectedHandreichung(null); setCurrentPage(0);
+        setIsZoomed(false); setAvailablePages([]); setPdfAvailable(false);
+      };
+      const selectCategory = (id) => { setSelectedCategory(id); setView('handouts'); };
+      const openSearch = () => { setView('search'); setSearchQuery(''); setSearchResults([]); };
+
+      const selectHandreichung = async (handout, categoryId, fromSearch = false) => {
+        setIsLoading(true);
+        setSelectedHandreichung({ ...handout, categoryId, fromSearch });
+        setCurrentPage(0); setView('viewer'); setIsZoomed(false);
+        const pages = await loadAvailablePages(categoryId, handout.id);
+        setAvailablePages(pages);
+        const pdfExists = await checkPdfExists(categoryId, handout.id);
+        setPdfAvailable(pdfExists);
+        setIsLoading(false);
+      };
+
+      const handleSearch = (query) => {
+        setSearchQuery(query);
+        setSearchResults(query.trim() === '' ? [] : searcher.search(query));
+      };
+
+      const loadAvailablePages = async (categoryId, handoutId) => {
+        const extensions = ['jpg','jpeg','png'];
+        const foundPages = [];
+        for (let i=1;i<=50;i++){
+          let pageFound = false;
+          for (let ext of extensions){
+            const filename = `bilder/${categoryId}_${handoutId}_${i}.${ext}`;
+            try { const exists = await checkImageExists(filename); if(exists){foundPages.push(filename);pageFound=true;break;} } catch(e){}
+          }
+          if (!pageFound) break;
+        }
+        return foundPages;
+      };
+
+      const checkImageExists = (url) => new Promise((resolve)=>{
+        const img = new Image();
+        const t = setTimeout(()=>{img.src='';resolve(false);},3000);
+        img.onload=()=>{clearTimeout(t);resolve(true);};
+        img.onerror=()=>{clearTimeout(t);resolve(false);};
+        img.src=url;
+      });
+
+      const checkPdfExists = async (categoryId, handoutId) => {
+        try { const r = await fetch(`handouts/${categoryId}_${handoutId}.pdf`,{method:'HEAD'}); return r.ok; } catch(e){ return false; }
+      };
+
+      const downloadPdf = () => {
+        if (!selectedHandreichung || !pdfAvailable) return;
+        const link = document.createElement('a');
+        link.href = `handouts/${selectedHandreichung.categoryId}_${selectedHandreichung.id}.pdf`;
+        link.download = `${selectedHandreichung.title}.pdf`;
+        document.body.appendChild(link); link.click(); document.body.removeChild(link);
+      };
+
+      const nextPage = ()=>{ if(currentPage<availablePages.length-1){setCurrentPage(currentPage+1);setIsZoomed(false);setImageError(false);} };
+      const prevPage = ()=>{ if(currentPage>0){setCurrentPage(currentPage-1);setIsZoomed(false);setImageError(false);} };
+      const toggleZoom = ()=>{ if(!imageError) setIsZoomed(!isZoomed); };
+
+      const BackBtn = ({onClick}) => React.createElement('button', {className:"home-button", onClick}
+        , React.createElement(ArrowLeft, null)
+      );
+
+      return React.createElement(React.Fragment, null
+
+        , view === 'categories' && React.createElement(React.Fragment, null
+          , React.createElement('div', {className:"topbar"}
+            , React.createElement('span', {className:"topbar-eyebrow"})
+            , React.createElement('img', {src:"logo.png", alt:"Logo", className:"topbar-logo"})
+          )
+          , React.createElement('div', {className:"hero"}
+            , React.createElement('p', {className:"hero-eyebrow"}, "Brückenschlag Digital")
+            , React.createElement('h1', {className:"hero-title"}, "Kategorien")
+          )
+          , React.createElement('div', {className:"divider"})
+          , React.createElement('div', {className:"scroll-area"}
+            , React.createElement('div', {className:"cat-list"}
+              , Object.keys(categoriesConfig).map(id =>
+                React.createElement('button', {key:id, className:"category-button", onClick:()=>selectCategory(id)}
+                  , React.createElement('span', {className:"cat-icon"}, categoriesConfig[id].icon)
+                  , React.createElement('span', {className:"cat-text"}
+                    , React.createElement('span', {className:"cat-name"}, categoriesConfig[id].title)
+                    , React.createElement('span', {className:"cat-count"}, categoriesConfig[id].handouts.length, " Handreichungen")
+                  )
+                  , React.createElement('span', {className:"cat-arrow"}, "›")
+                )
+              )
+            )
+            , React.createElement('div', {className:"search-btn-wrap"}
+              , React.createElement('button', {className:"search-button", onClick:openSearch}
+                , React.createElement(SearchIcon, null)
+                , "Handreichungen durchsuchen"
+              )
+              , React.createElement('button', {className:"impressum-button", onClick:()=>window.open('https://ash-sprungbrett.de/kontakt/','_blank')}, "Impressum")
+            )
+          )
+        )
+
+        , view === 'handouts' && selectedCategory && React.createElement(React.Fragment, null
+          , React.createElement('div', {className:"topbar"}
+            , React.createElement(BackBtn, {onClick:goHome})
+            , React.createElement('span', {className:"topbar-title"}, categoriesConfig[selectedCategory].title)
+            , React.createElement('img', {src:"logo.png", alt:"Logo", className:"topbar-logo"})
+          )
+          , React.createElement('div', {className:"divider"})
+          , React.createElement('div', {className:"scroll-area"}
+            , categoriesConfig[selectedCategory].handouts.map((h,i) =>
+              React.createElement('button', {key:i, className:"handout-button", onClick:()=>selectHandreichung(h,selectedCategory)}
+                , React.createElement('span', {className:"handout-bullet"})
+                , h.title
+                , React.createElement('span', {className:"handout-arrow"}, "›")
+              )
+            )
+          )
+        )
+
+        , view === 'search' && React.createElement(React.Fragment, null
+          , React.createElement('div', {className:"search-header"}
+            , React.createElement(BackBtn, {onClick:goHome})
+            , React.createElement('div', {className:"search-input-wrapper"}
+              , React.createElement('input', {
+                type:"text", className:"search-input",
+                placeholder:"Handreichung suchen …",
+                value:searchQuery, onChange:(e)=>handleSearch(e.target.value),
+                autoFocus:true
+              })
+              , React.createElement('span', {className:"search-icon-input"}, React.createElement(SearchIcon, null))
+            )
+          )
+          , React.createElement('div', {className:"divider"})
+          , React.createElement('div', {className:"search-results-container"}
+            , searchQuery === '' ? (
+              React.createElement('div', {className:"no-search-results"}
+                , React.createElement('div', {className:"no-search-results-icon"}, "🔍")
+                , React.createElement('div', {className:"no-search-results-text"}, "Suche nach Handreichungen")
+              )
+            ) : searchResults.length === 0 ? (
+              React.createElement('div', {className:"no-search-results"}
+                , React.createElement('div', {className:"no-search-results-icon"}, "😕")
+                , React.createElement('div', {className:"no-search-results-text"}, "Keine Ergebnisse")
+                , React.createElement('div', {className:"no-search-results-hint"}, "Versuche andere Begriffe")
+              )
+            ) : searchResults.map((r,i) =>
+              React.createElement('div', {key:i, className:"search-result-item", onClick:()=>selectHandreichung(r,r.categoryId,true)}
+                , React.createElement('div', {className:"search-result-title"}, r.title)
+                , React.createElement('div', {className:"search-result-category"}, r.categoryTitle)
+                , React.createElement('div', {className:"search-result-match"}, Math.round(r.score*100), "% Übereinstimmung")
+              )
+            )
+          )
+        )
+
+        , view === 'viewer' && selectedHandreichung && React.createElement(React.Fragment, null
+          , React.createElement('div', {className:"topbar"}
+            , React.createElement(BackBtn, {onClick: _optionalChain([selectedHandreichung,'optionalAccess',_=>_.fromSearch]) ? goBackToSearch : goBackToCategory})
+            , React.createElement('span', {className:"topbar-title"}, selectedHandreichung.title)
+            , React.createElement('img', {src:"logo.png", alt:"Logo", className:"topbar-logo"})
+          )
+          , React.createElement('div', {className:"divider"})
+          , React.createElement('div', {className:"viewer-container"}
+            , isLoading ? React.createElement('div', {className:"loading"}, "Lade Bilder …")
+            : availablePages.length === 0 ? (
+              React.createElement(React.Fragment, null
+                , React.createElement('div', {className:"error-message"}
+                  , "❌ Keine Bilder gefunden"
+                  , React.createElement('br'), React.createElement('br')
+                  , "Erwarteter Pfad:", React.createElement('br')
+                  , React.createElement('strong', {style:{color:'#333',fontSize:'13px',display:'inline-block',marginTop:'8px',padding:'6px 14px',background:'#f5f5f5',borderRadius:'8px',border:'1px solid #e0e0e0'}}
+                    , "bilder/", selectedHandreichung.categoryId, "_", selectedHandreichung.id, "_1.jpg"
+                  )
+                  , React.createElement('br'), React.createElement('br')
+                  , React.createElement('span', {style:{fontSize:'13px',color:'#666'}}, "Ordner \"bilder\" neben der HTML-Datei anlegen.")
+                  , !pdfAvailable && React.createElement(React.Fragment, null
+                    , React.createElement('br'), React.createElement('br')
+                    , "❌ Kein PDF gefunden", React.createElement('br'), React.createElement('br')
+                    , React.createElement('strong', {style:{color:'#333',fontSize:'13px',display:'inline-block',marginTop:'8px',padding:'6px 14px',background:'#f5f5f5',borderRadius:'8px',border:'1px solid #e0e0e0'}}
+                      , "handouts/", selectedHandreichung.categoryId, "_", selectedHandreichung.id, ".pdf"
+                    )
+                  )
+                )
+                , pdfAvailable && React.createElement('button', {className:"download-button", onClick:downloadPdf}
+                  , React.createElement(DownloadIcon, null), "Handreichung als PDF herunterladen"
+                )
+              )
+            ) : (
+              React.createElement(React.Fragment, null
+                , React.createElement('div', {className:`image-viewer ${isZoomed?'zoomed':''}`}
+                  , imageError
+                    ? React.createElement('div', {className:"error-message"}, "Bild konnte nicht geladen werden")
+                    : React.createElement('img', {src:availablePages[currentPage], alt:`Schritt ${currentPage+1}`, onClick:toggleZoom, onError:()=>setImageError(true), onLoad:()=>setImageError(false)})
+                )
+                , React.createElement('div', {className:"navigation"}
+                  , React.createElement('button', {className:"nav-button", onClick:prevPage, disabled:currentPage===0}, React.createElement(ArrowLeft, null))
+                  , React.createElement('div', {className:"page-indicator"}, "Schritt ", currentPage+1, " von ", availablePages.length)
+                  , React.createElement('button', {className:"nav-button", onClick:nextPage, disabled:currentPage===availablePages.length-1}, React.createElement(ArrowRight, null))
+                )
+                , React.createElement('button', {
+                  className:`download-button ${!pdfAvailable?'disabled':''}`,
+                  onClick:downloadPdf, disabled:!pdfAvailable}
+                  , React.createElement(DownloadIcon, null)
+                  , pdfAvailable ? 'Handreichung als PDF herunterladen' : 'Kein PDF verfügbar'
+                )
+              )
+            )
+          )
+        )
+      );
+    }
+
+    ReactDOM.render(React.createElement(App, null), document.getElementById('app'));
+  </script>
+
+  <script>
+    function setVhVar(){ document.documentElement.style.setProperty('--vh',(window.innerHeight*0.01)+'px'); }
+    setVhVar();
+    window.addEventListener('resize', setVhVar);
+    window.addEventListener('orientationchange', setVhVar);
+  </script>
+</body>
+</html>
